@@ -1,10 +1,6 @@
-Katariinan Tupa V17 – noutoajan korjaus
+Katariinan Tupa – V18 ordering
 
-Noutoaikaa ei voi valita alle tunnin päähän nykyisestä kellonajasta.
-Esimerkiksi:
-- tilaus klo 14.00 -> aikaisin nouto klo 15.00
-- tilaus klo 14.03 -> aikaisin valittava aika klo 15.05
-- tilaus klo 14.27 -> aikaisin valittava aika klo 15.30
+Tilauslomake on yhdistetty Cloudflare Workeriin:
+https://katariinan-tupa-orders.cubergames.workers.dev/order
 
-Valittavat ajat pyöristetään ylöspäin 5 minuutin tarkkuudella.
-Raja päivittyy myös automaattisesti, jos tilauslomake jätetään auki.
+Tilaus tallennetaan D1-tietokantaan. Katariinan Tupa saa Resend-sähköpostin, jossa on vahvistuslinkki. Vahvistuksen jälkeen asiakkaalle lähetetään vahvistussähköposti.

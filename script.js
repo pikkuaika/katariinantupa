@@ -84,19 +84,58 @@
   quantity.addEventListener("input", refreshRules);
   pickup.addEventListener("change", validatePickup);
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if(!form.reportValidity() || !validatePickup()) return;
 
-    // V16 contains the complete browser-side ordering UI and validation.
-    // The email approval workflow is connected to a server/API in the next step.
-    const order = Object.fromEntries(new FormData(form).entries());
-    order.total = (PRICE * Number(order.quantity)).toFixed(2);
-    order.createdAt = new Date().toISOString();
-    localStorage.setItem("katariinanTupaLatestOrder", JSON.stringify(order));
+    error.textContent = "";
+    const submitButton = form.querySelector('.submit-order[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = "Lähetetään...";
 
-    form.hidden = true;
-    success.hidden = false;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const mealKey = data.meal === "Paistetut muikut perunamuussilla" ? "muikut" :
+                    data.meal === "Jauhelihapihvit perunamuusilla" ? "pihvit" : "";
+
+    const order = {
+      meal: mealKey,
+      quantity: Number(data.quantity),
+      pickup_time: data.pickup,
+      customer_name: data.customerName,
+      phone: data.phone,
+      email: data.email,
+      address: data.address
+    };
+
+    try {
+      const response = await fetch("https://katariinan-tupa-orders.cubergames.workers.dev/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order)
+      });
+
+      let result = {};
+      try { result = await response.json(); } catch (_) {}
+
+      if (!response.ok) {
+        throw new Error(result.error || "Tilauksen lähetys epäonnistui. Yritä uudelleen.");
+      }
+
+      localStorage.setItem("katariinanTupaLatestOrder", JSON.stringify({
+        ...order,
+        orderId: result.orderId || "",
+        createdAt: new Date().toISOString()
+      }));
+
+      form.hidden = true;
+      success.hidden = false;
+    } catch (err) {
+      error.textContent = err && err.message ? err.message : "Tilauksen lähetys epäonnistui. Yritä uudelleen.";
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
+    }
   });
 
 
