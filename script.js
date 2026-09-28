@@ -4,7 +4,8 @@
   const form = document.getElementById("orderForm");
   const success = document.getElementById("orderSuccess");
   const meal = document.getElementById("meal");
-  const pickup = document.getElementById("pickup");
+  const pickupDate = document.getElementById("pickupDate");
+  const pickupTime = document.getElementById("pickupTime");
   const quantity = document.getElementById("quantity");
   const total = document.getElementById("orderTotal");
   const mealDays = document.getElementById("mealDays");
@@ -20,33 +21,68 @@
   };
 
   function pad(n){ return String(n).padStart(2,"0"); }
-  function localValue(d){
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  function todayValue(){
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   }
-  function minimumPickup(){
-    const exactMinimum = new Date(Date.now() + 60 * 60 * 1000);
-    exactMinimum.setSeconds(0, 0);
+  function ceilToFiveMinutes(date){
+    const d = new Date(date);
+    d.setSeconds(0, 0);
+    const remainder = d.getMinutes() % 5;
+    if(remainder !== 0) d.setMinutes(d.getMinutes() + (5 - remainder));
+    return d;
+  }
+  function buildPickupTimes(){
+    const previous = pickupTime.value;
+    pickupTime.innerHTML = '<option value="">Valitse aika</option>';
 
-    // Pyöristetään ylöspäin seuraavaan 5 minuuttiin.
-    // Näin valittava aika ei voi koskaan olla alle tuntia nykyhetkestä.
-    const minutes = exactMinimum.getMinutes();
-    const remainder = minutes % 5;
-    if (remainder !== 0) {
-      exactMinimum.setMinutes(minutes + (5 - remainder));
+    if(!pickupDate.value) return;
+
+    const today = todayValue();
+    let earliestMinutes = 10 * 60 + 30;
+
+    if(pickupDate.value === today){
+      const earliest = ceilToFiveMinutes(new Date(Date.now() + 60 * 60 * 1000));
+      earliestMinutes = Math.max(earliestMinutes, earliest.getHours() * 60 + earliest.getMinutes());
     }
-    return exactMinimum;
+
+    for(let minutes = 10 * 60 + 30; minutes <= 13 * 60; minutes += 5){
+      if(minutes < earliestMinutes) continue;
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      const value = `${pad(h)}:${pad(m)}`;
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value.replace(":", ".");
+      pickupTime.appendChild(option);
+    }
+
+    if(previous && [...pickupTime.options].some(o => o.value === previous)){
+      pickupTime.value = previous;
+    }
   }
   function refreshRules(){
-    pickup.min = localValue(minimumPickup());
+    pickupDate.min = todayValue();
     mealDays.textContent = dayText[meal.value] || "";
+    buildPickupTimes();
     total.textContent = (PRICE * Math.max(1, Number(quantity.value)||1)).toFixed(2).replace(".",",") + " €";
   }
   function validatePickup(){
     error.textContent = "";
-    if(!pickup.value) return false;
-    const chosen = new Date(pickup.value);
-    if(chosen < minimumPickup()){
-      error.textContent = "Valitse noutoaika vähintään tunnin päähän.";
+    if(!pickupDate.value || !pickupTime.value) return false;
+    const chosen = new Date(`${pickupDate.value}T${pickupTime.value}`);
+    if(Number.isNaN(chosen.getTime())){
+      error.textContent = "Valitse kelvollinen noutoaika.";
+      return false;
+    }
+    const [hour, minute] = pickupTime.value.split(":").map(Number);
+    const minutes = hour * 60 + minute;
+    if(minutes < 10 * 60 + 30 || minutes > 13 * 60){
+      error.textContent = "Noutoaika on valittavissa klo 10.30–13.00.";
+      return false;
+    }
+    if(chosen.getTime() < Date.now() + 60 * 60 * 1000){
+      error.textContent = "Noutoajan tulee olla vähintään tunnin kuluttua tilauksesta.";
       return false;
     }
     const allowed = availability[meal.value] || [];
@@ -82,7 +118,8 @@
 
   meal.addEventListener("change", refreshRules);
   quantity.addEventListener("input", refreshRules);
-  pickup.addEventListener("change", validatePickup);
+  pickupDate.addEventListener("change", () => { buildPickupTimes(); validatePickup(); });
+  pickupTime.addEventListener("change", validatePickup);
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -101,7 +138,7 @@
     const order = {
       meal: mealKey,
       quantity: Number(data.quantity),
-      pickup_time: data.pickup,
+      pickup_time: `${data.pickupDate}T${data.pickupTime}`,
       customer_name: data.customerName,
       phone: data.phone,
       email: data.email,
@@ -139,14 +176,6 @@
   });
 
 
-  setInterval(() => {
-    if (modal.classList.contains("open")) {
-      pickup.min = localValue(minimumPickup());
-      if (pickup.value && new Date(pickup.value) < minimumPickup()) {
-        pickup.value = "";
-      }
-    }
-  }, 30000);
-
   refreshRules();
+  setInterval(() => { if(modal.classList.contains("open")) buildPickupTimes(); }, 30000);
 })();
