@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Katariinan Tupa – Take away kotikahvila</title>
+  <meta name="description" content="Katariinan Tupa – aitoa ja puhdasta kotiruokaa ilman säilöntäaineita. Tilaa ja nouda.">
+  <link rel="stylesheet" href="styles.css?v=17">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#etusivu"><img src="assets/logo.jpg" alt="Katariinan Tupa"><span>Katariinan Tupa</span></a>
+    <nav><a href="#etusivu">Etusivu</a><a href="#annokset">Annokset</a><a href="#yhteystiedot">Yhteystiedot</a></nav>
+  </div>
+</header>
+
+<main id="etusivu">
+  <section class="hero"><img src="assets/hero.jpg" alt="Katariinan Tupa järven rannalla"></section>
+
+  <div class="content-shell">
+    <section class="intro">
+      <div class="sprig left">❧</div>
+      <p class="eyebrow">TAKE AWAY • KOTIKAHVILA</p>
+      <h1>Tervetuloa Katariinan tupaan</h1>
+      <p class="lead">Tarjoamme aitoa ja puhdasta kotiruokaa ilman säilöntäaineita.</p>
+      <strong>Tilaa alta ja nouda.</strong>
+      <div class="sprig right">❧</div>
+    </section>
+
+    <section id="annokset" class="food-grid">
+      <article class="food-card">
+        <img src="assets/muikut.jpg" alt="Paistetut muikut perunamuussilla">
+        <div class="food-copy">
+          <h2>Paistetut muikut<br>perunamuussilla</h2>
+          <p>Sisältää aitoa perunamuussia, 12 kpl Puruveden muikkuja, sitruunalohkot, tomaatti ja kurkku.</p>
+          <p class="serving-days"><strong>Saatavilla:</strong> ma, ke ja pe</p>
+          <div class="price-row"><b>10,90 €</b><span>sisältää alv.</span></div>
+          <button class="btn order-btn" type="button" data-meal="Paistetut muikut perunamuussilla">Tilaa annos →</button>
+        </div>
+      </article>
+
+      <article class="food-card">
+        <img src="assets/jauhelihapihvit.jpg" alt="Jauhelihapihvit perunamuusilla">
+        <div class="food-copy">
+          <h2>Jauhelihapihvit<br>perunamuussilla</h2>
+          <p>Sisältää aitoa perunamuussia, nauta-sikajauhelihapihvit 2 kpl, maustekurkut ja tomaattia.</p>
+          <p class="serving-days"><strong>Saatavilla:</strong> ti, to ja la</p>
+          <div class="price-row"><b>10,90 €</b><span>sisältää alv.</span></div>
+          <button class="btn order-btn" type="button" data-meal="Jauhelihapihvit perunamuusilla">Tilaa annos →</button>
+        </div>
+      </article>
+    </section>
+  </div>
+</main>
+
+<div class="order-modal" id="orderModal" aria-hidden="true">
+  <div class="order-backdrop" data-close-order></div>
+  <section class="order-dialog" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
+    <button class="order-close" type="button" aria-label="Sulje" data-close-order>×</button>
+    <p class="order-kicker">KATARIINAN TUPA • TILAUS</p>
+    <h2 id="orderTitle">Tilaa annos noudettavaksi</h2>
+    <p class="order-info">Valitse noutoaika. Ensimmäinen mahdollinen noutoaika on vähintään tunnin kuluttua tilauksesta.</p>
+
+    <form id="orderForm">
+      <div class="order-grid">
+        <label class="full">Annos
+          <select id="meal" name="meal" required>
+            <option value="Paistetut muikut perunamuussilla">Paistetut muikut perunamuussilla</option>
+            <option value="Jauhelihapihvit perunamuusilla">Jauhelihapihvit perunamuusilla</option>
+          </select>
+          <small id="mealDays"></small>
+        </label>
+
+        <label>Kappalemäärä
+          <input id="quantity" name="quantity" type="number" min="1" max="20" value="1" required>
+        </label>
+
+        <label>Noutoaika
+          <input id="pickup" name="pickup" type="datetime-local" required>
+          <small>Vähintään 1 tunnin valmistusaika.</small>
+        </label>
+
+        <label>Nimi
+          <input id="customerName" name="customerName" type="text" autocomplete="name" required>
+        </label>
+
+        <label>Puhelinnumero
+          <input id="phone" name="phone" type="tel" autocomplete="tel" required>
+        </label>
+
+        <label class="full">Sähköposti
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </label>
+
+        <label class="full">Osoite
+          <input id="address" name="address" type="text" autocomplete="street-address" required>
+        </label>
+      </div>
+
+      <div class="order-summary">
+        <span>Yhteensä</span>
+        <strong id="orderTotal">10,90 €</strong>
+      </div>
+
+      <p class="form-error" id="formError" role="alert"></p>
+      <button class="submit-order" type="submit">Lähetä tilaus</button>
+      <p class="order-note">Tilaus on alustava, kunnes Katariinan Tupa vahvistaa sen sähköpostitse.</p>
+    </form>
+
+    <div class="order-success" id="orderSuccess" hidden>
+      <h3>Tilaus vastaanotettu</h3>
+      <p>Kiitos! Saat sähköpostiisi vahvistuksen, kun Katariinan Tupa on hyväksynyt tilauksen.</p>
+      <button type="button" class="submit-order" data-close-order>Sulje</button>
+    </div>
+  </section>
+</div>
+
+
+<footer id="yhteystiedot">
+  <div class="footer-inner">
+    <div class="footer-brand"><img src="assets/logo.jpg" alt=""><strong>Katariinan Tupa</strong></div>
+    <div class="footer-contact"><span>☎ &nbsp;044 956 3315</span><span>⌂ &nbsp;Nouto-osoite: Käärmeniementie 31, Varkaus</span><span>✉ &nbsp;katariinantupa@gmail.com</span><span>▦ &nbsp;Y-tunnus: 1653012-9</span></div>
+    <div class="footer-welcome">Tervetuloa Katariinan Tupaan ♡</div>
+    <div class="footer-nav"><span>© 2026 Katariinan Tupa</span></div>
+  </div>
+</footer>
+<script src="script.js?v=17"></script>
+</body>
+</html>
