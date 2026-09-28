@@ -10,6 +10,7 @@
   const total = document.getElementById("orderTotal");
   const mealDays = document.getElementById("mealDays");
   const error = document.getElementById("formError");
+  const orderTitle = document.getElementById("orderTitle");
 
   const availability = {
     "Paistetut muikut perunamuussilla": [1,3,5], // ma, ke, pe
@@ -100,6 +101,7 @@
       meal.value = btn.dataset.meal;
       form.hidden = false;
       success.hidden = true;
+      orderTitle.hidden = false;
       form.reset();
       meal.value = btn.dataset.meal;
       quantity.value = 1;
@@ -166,6 +168,7 @@
       }));
 
       form.hidden = true;
+      orderTitle.hidden = true;
       success.hidden = false;
     } catch (err) {
       error.textContent = err && err.message ? err.message : "Tilauksen lähetys epäonnistui. Yritä uudelleen.";
