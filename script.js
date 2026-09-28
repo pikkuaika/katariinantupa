@@ -1,5 +1,9 @@
 (() => {
-  const PRICE = 10.90;
+  const PRICES = {
+    "Paistetut muikut perunamuussilla": 10.90,
+    "Jauhelihapihvit perunamuusilla": 10.90,
+    "Katariinan Erikoinen": 9.90
+  };
   const modal = document.getElementById("orderModal");
   const form = document.getElementById("orderForm");
   const success = document.getElementById("orderSuccess");
@@ -11,14 +15,17 @@
   const mealDays = document.getElementById("mealDays");
   const error = document.getElementById("formError");
   const orderTitle = document.getElementById("orderTitle");
+  const condimentBox = document.getElementById("condimentBox");
 
   const availability = {
     "Paistetut muikut perunamuussilla": [1,3,5], // ma, ke, pe
-    "Jauhelihapihvit perunamuusilla": [2,4,6]    // ti, to, la
+    "Jauhelihapihvit perunamuusilla": [2,4,6],   // ti, to, la
+    "Katariinan Erikoinen": [1,2,3,4,5,6]       // ma-la
   };
   const dayText = {
     "Paistetut muikut perunamuussilla": "Saatavilla ma, ke ja pe.",
-    "Jauhelihapihvit perunamuusilla": "Saatavilla ti, to ja la."
+    "Jauhelihapihvit perunamuusilla": "Saatavilla ti, to ja la.",
+    "Katariinan Erikoinen": "Saatavilla ma–la klo 9.00–18.00."
   };
 
   function pad(n){ return String(n).padStart(2,"0"); }
@@ -33,21 +40,26 @@
     if(remainder !== 0) d.setMinutes(d.getMinutes() + (5 - remainder));
     return d;
   }
+  function pickupWindow(){
+    if(meal.value === "Katariinan Erikoinen") return { start: 9 * 60, end: 18 * 60 };
+    return { start: 10 * 60 + 30, end: 13 * 60 };
+  }
   function buildPickupTimes(){
     const previous = pickupTime.value;
     pickupTime.innerHTML = '<option value="">Valitse aika</option>';
 
     if(!pickupDate.value) return;
 
+    const window = pickupWindow();
     const today = todayValue();
-    let earliestMinutes = 10 * 60 + 30;
+    let earliestMinutes = window.start;
 
     if(pickupDate.value === today){
       const earliest = ceilToFiveMinutes(new Date(Date.now() + 60 * 60 * 1000));
       earliestMinutes = Math.max(earliestMinutes, earliest.getHours() * 60 + earliest.getMinutes());
     }
 
-    for(let minutes = 10 * 60 + 30; minutes <= 13 * 60; minutes += 5){
+    for(let minutes = window.start; minutes <= window.end; minutes += 5){
       if(minutes < earliestMinutes) continue;
       const h = Math.floor(minutes / 60);
       const m = minutes % 60;
@@ -65,8 +77,10 @@
   function refreshRules(){
     pickupDate.min = todayValue();
     mealDays.textContent = dayText[meal.value] || "";
+    condimentBox.hidden = meal.value !== "Katariinan Erikoinen";
     buildPickupTimes();
-    total.textContent = (PRICE * Math.max(1, Number(quantity.value)||1)).toFixed(2).replace(".",",") + " €";
+    const price = PRICES[meal.value] || 0;
+    total.textContent = (price * Math.max(1, Number(quantity.value)||1)).toFixed(2).replace(".",",") + " €";
   }
   function validatePickup(){
     error.textContent = "";
@@ -78,8 +92,11 @@
     }
     const [hour, minute] = pickupTime.value.split(":").map(Number);
     const minutes = hour * 60 + minute;
-    if(minutes < 10 * 60 + 30 || minutes > 13 * 60){
-      error.textContent = "Noutoaika on valittavissa klo 10.30–13.00.";
+    const window = pickupWindow();
+    if(minutes < window.start || minutes > window.end){
+      error.textContent = meal.value === "Katariinan Erikoinen"
+        ? "Katariinan Erikoinen on tilattavissa klo 9.00–18.00."
+        : "Noutoaika on valittavissa klo 10.30–13.00.";
       return false;
     }
     if(chosen.getTime() < Date.now() + 60 * 60 * 1000){
@@ -88,9 +105,11 @@
     }
     const allowed = availability[meal.value] || [];
     if(!allowed.includes(chosen.getDay())){
-      error.textContent = meal.value.startsWith("Paistetut") ?
-        "Muikkuannos on saatavilla maanantaisin, keskiviikkoisin ja perjantaisin." :
-        "Pihviannos on saatavilla tiistaisin, torstaisin ja lauantaisin.";
+      error.textContent = meal.value.startsWith("Paistetut")
+        ? "Muikkuannos on saatavilla maanantaisin, keskiviikkoisin ja perjantaisin."
+        : meal.value === "Katariinan Erikoinen"
+          ? "Katariinan Erikoinen on saatavilla maanantaista lauantaihin."
+          : "Pihviannos on saatavilla tiistaisin, torstaisin ja lauantaisin.";
       return false;
     }
     return true;
@@ -135,7 +154,9 @@
 
     const data = Object.fromEntries(new FormData(form).entries());
     const mealKey = data.meal === "Paistetut muikut perunamuussilla" ? "muikut" :
-                    data.meal === "Jauhelihapihvit perunamuusilla" ? "pihvit" : "";
+                    data.meal === "Jauhelihapihvit perunamuusilla" ? "pihvit" :
+                    data.meal === "Katariinan Erikoinen" ? "erikoinen" : "";
+    const condiments = [...form.querySelectorAll('input[name="condiments"]:checked')].map(el => el.value);
 
     const order = {
       meal: mealKey,
@@ -144,7 +165,8 @@
       customer_name: data.customerName,
       phone: data.phone,
       email: data.email,
-      address: data.address
+      address: data.address,
+      condiments: mealKey === "erikoinen" ? condiments : []
     };
 
     try {
