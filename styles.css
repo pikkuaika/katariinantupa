@@ -210,8 +210,17 @@ footer{
   nav a{font-size:12px}
   nav a:first-child{display:none}
 
-  .hero{height:270px}
-  .hero img{object-position:center top}
+  /* Mobile: show the complete wide hero artwork so the embedded logo is not cropped. */
+  .hero{
+    height:auto;
+    overflow:visible;
+  }
+  .hero img{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    object-position:center center;
+  }
 
   .intro{padding:38px 15px 28px}
   .intro .eyebrow{font-size:15px;letter-spacing:.17em;margin-bottom:13px}
