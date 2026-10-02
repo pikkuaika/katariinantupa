@@ -8,6 +8,61 @@
   <link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
+
+  <script>
+  const HUOLTOTILA = true; // Vaihda false, kun sivusto on valmis
+
+  if (HUOLTOTILA) {
+    document.write(`
+      <style>
+        body {
+          margin: 0;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f4f0e6;
+          font-family: Georgia, serif;
+          text-align: center;
+          color: #344b35;
+        }
+
+        .maintenance {
+          padding: 30px;
+        }
+
+        .maintenance img {
+          width: 150px;
+          max-width: 80%;
+          margin-bottom: 25px;
+        }
+
+        .maintenance h1 {
+          font-size: 36px;
+        }
+
+        .maintenance p {
+          font-size: 19px;
+          line-height: 1.7;
+        }
+      </style>
+
+      <div class="maintenance">
+        <img src="assets/logo.jpg" alt="Katariinan Tupa">
+        <h1>Sivustoamme päivitetään</h1>
+        <p>
+          Katariinan Tuvan verkkosivut ovat
+          parhaillaan uudistettavana.
+          <br>
+          Palaamme pian!
+        </p>
+      </div>
+    `);
+
+    document.write('<style>body > :not(script):not(.maintenance) { display: none !important; }</style>');
+  }
+</script>
+  
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="#etusivu"><img src="assets/logo.jpg" alt="Katariinan Tupa"><span>Katariinan Tupa</span></a>
